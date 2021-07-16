@@ -4,7 +4,8 @@ from typing import Optional, Tuple
 
 class Board:
 
-    def __init__(self, rows: Optional[int] = 11, columns: Optional[int] = 11, shape: Optional[Tuple[int, int, int, int]] = None):
+    def __init__(self, rows: Optional[int] = 11, columns: Optional[int] = 11,
+                 shape: Optional[Tuple[int, int, int, int]] = None):
 
         if shape is not None and isinstance(shape, tuple) and all(isinstance(item, int) for item in shape):
             self._origin_x, self._origin_y, self._rows_total, self._columns_total = shape
@@ -29,8 +30,21 @@ class Board:
 
         self._field = np.zeros((self._rows_total, self._columns_total), dtype=bool)
 
+    @classmethod
+    def from_array(cls, array: np.ndarray):
+
+        if not isinstance(array, np.ndarray):
+            raise TypeError(f"Wrong type of 'array' parameter. Expected np.ndarray got {type(array)}")
+        rows, columns = array.shape
+        board_instance = cls(rows=rows, columns=columns)
+        board_instance._fill_whole_board(array=array)
+        return board_instance
+
     def __str__(self):
         return self._field.astype(int)
+
+    def __repr__(self):
+        return self._field
 
     def str(self):
         return self.__str__()
@@ -47,6 +61,9 @@ class Board:
     def _fill(self, value):
         self._field.fill(value)
 
+    def _fill_whole_board(self, array: np.ndarray):
+        self._field = array
+
     def random(self):
         self._random()
 
@@ -54,6 +71,16 @@ class Board:
         self._field = np.random.choice(a=[True, False], size=(self._rows_total, self._columns_total))
 
     def _step(self):
+        sum_array = self._sum_array()
+        alive_2 = np.logical_and(sum_array == 2, self._field)
+        alive_3 = sum_array == 3
+        birth = sum_array == 3
+        self._field = np.logical_or(alive_2, alive_3, birth)
+
+    def step(self):
+        self._step()
+
+    def _sum_array(self):
         sum_array = np.zeros_like(self._field, dtype=int)
 
         sum_array[:, 1:] += self._field.astype(int)[:, 0:-1]  # sum for x=+1 and y=0
@@ -67,14 +94,7 @@ class Board:
         sum_array[0:-1, 1:] += self._field.astype(int)[1:, 0:-1]  # sum for x=+1 and y=-1
         sum_array[0:-1, 0:-1] += self._field.astype(int)[1:, 1:]  # sum for x=-1 and y=-1
 
-        alive_2 = sum_array == 2
-        alive_3 = sum_array == 3
-        birth = sum_array == 3
-        self._field = np.logical_or(alive_2, alive_3, birth)
-
-    def step(self):
-        self._step()
-
+        return sum_array
 
 if __name__ == "__main__":
     board = Board()
