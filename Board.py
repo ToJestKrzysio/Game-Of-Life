@@ -57,15 +57,28 @@ class Board:
         sum_array = np.zeros_like(self._field, dtype=int)
 
         sum_array[:, 1:] += self._field.astype(int)[:, 0:-1]  # sum for x=+1 and y=0
-        sum_array[:, 0:-1] += self._field.astype[:, 1:]  # sum for x=-1 and y=0
+        sum_array[:, 0:-1] += self._field.astype(int)[:, 1:]  # sum for x=-1 and y=0
 
-        sum_array[1:, :] += self._field.astype[0:-1, :]  # sum for x=0 and y=+1
-        sum_array[0:-1, :] += self._field.astype[1:, :]  # sum for x=0 and y=-1
+        sum_array[1:, :] += self._field.astype(int)[0:-1, :]  # sum for x=0 and y=+1
+        sum_array[0:-1, :] += self._field.astype(int)[1:, :]  # sum for x=0 and y=-1
 
-        sum_array[1:, 1:] += self._field.astype[0:-1, 0:-1]  # sum for x=+1 and y=+1
-        sum_array[1:, 0:-1] += self._field.astype[0:-1, 1:]  # sum for x=-1 and y=+1
-        sum_array[0:-1, 1:] += self._field.astype[1:, 0:-1]  # sum for x=+1 and y=-1
-        sum_array[0:-1, 0:-1] += self._field.astype[1:, 1:]  # sum for x=-1 and y=-1
-        if sum_array >= 2
+        sum_array[1:, 1:] += self._field.astype(int)[0:-1, 0:-1]  # sum for x=+1 and y=+1
+        sum_array[1:, 0:-1] += self._field.astype(int)[0:-1, 1:]  # sum for x=-1 and y=+1
+        sum_array[0:-1, 1:] += self._field.astype(int)[1:, 0:-1]  # sum for x=+1 and y=-1
+        sum_array[0:-1, 0:-1] += self._field.astype(int)[1:, 1:]  # sum for x=-1 and y=-1
+
+        alive_2 = sum_array == 2
+        alive_3 = sum_array == 3
+        birth = sum_array == 3
+        self._field = np.logical_or(alive_2, alive_3, birth)
+
+    def step(self):
+        self._step()
 
 
+if __name__ == "__main__":
+    board = Board()
+    board.random()
+    print("\n", board.str())
+    board.step()
+    print("\n", board.str())
